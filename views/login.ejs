@@ -1,0 +1,52 @@
+<% include partials/header.ejs %>
+
+Username: <input type="text" id="s_username" name="s_username">
+<br><br>
+Password: <input type="text" id="s_password" name="s_password">
+<br><br>
+<button id="loginBtn" class="btn btn-lg btn-info"> Log in</button>
+<br><br>
+<div id="signUpError"></div>
+<script>
+    //login page
+    $("#loginBtn").on("click", function () {
+        location.href = "/";
+    });//login
+
+    // user signs up
+    $("#signingUpBtn").on("click", function () {
+        let username = $("#s_username").val();
+        let password = $("#s_password").val();
+
+        if (username == "") {
+            $("#signUpError").attr("class", "text-danger");
+            $("#signUpError").html("Please enter a username!");
+            return;
+        } else if (password == "") {
+            $("#signUpError").attr("class", "text-danger");
+            $("#signUpError").html("Please enter a password!");
+            return;
+        }
+
+        $.ajax({
+            method: "GET",
+            url: "/LoginRequest",
+            dataType: "json",
+            data: {
+                "username": username,
+                "s_password": password
+            },
+            success: function (result, status) {
+                if (result == false) {
+                    $("#signUpError").attr("class", "text-danger");
+                    $("#signUpError").html("Username already taken. Please try again.");
+                } else {
+                    $("#signUpError").attr("class", "text-success");
+                    $("#signUpError").html("Registration was successful.");
+                }
+            }
+
+        });//ajax
+    });//signUpBtn
+</script>
+<% include partials/footer %>

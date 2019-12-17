@@ -1,0 +1,136 @@
+<% include partials/header.ejs %>
+
+<div class="topnav">
+    <a id="dashboard" href="/dashboard">Your personal schedule</a>
+    <a href="/availableApp">Available Appointments</a>
+</div>
+<br><br>
+<h4>My Schedule</h4>
+
+<table class="centered">
+    <tr id="table-header">
+        <td><strong>Date</strong></td>
+        <td><strong>Start time</strong></td>
+        <td><strong>Duration</strong></td>
+        <td><strong>Booked by</strong></td>
+    </tr>
+    <tr class="table-row">
+        <td>
+            <div id="dt"></div>
+        </td>
+        <td>
+            <div id="st"></div>
+        </td>
+        <td>
+            <div id="dur"></div>
+        </td>
+        <td>
+            <div id="bo"></div>
+        </td>
+    </tr>
+
+</table>
+<br><br>
+<div id="message"></div>
+
+<br><br>
+
+<p><a id="add" href="/addTimeSlot"
+      onclick="centeredPopup(this.href,'myWindow','800','450','yes');return false">Add new appointment!</a></p>
+<p><a id="delete" href="/removeTimeSlot"
+      onclick="centeredPopup(this.href,'myWindow','800','450','yes');return false">Delete an appointment!</a></p>
+<br><br>
+
+<form action="/logout">
+    <button class="btn btn-lg btn-danger">Logout</button>
+</form>
+
+<script>
+    $(document).ready(function () {
+
+        getUsersEvents();
+
+        function getUsersEvents() {
+            $.ajax({
+                method: "GET",
+                url: "/getUsersEvents",
+                dataType: "json",
+                success: function (result, status) {
+                    let str = "";
+                    let date = "";
+                    let dtKey = "";
+                    let stKey = "";
+                    let durKey = "";
+                    let boKey = "";
+
+                    $("#message").hide();
+
+                    if (result.length == 0) {
+                        $("#message").attr("class", "text-info");
+                        $("#message").html("You currently don't have any appointments.")
+                        $("#message").show();
+                    } else {
+                        for (let i = 0; i < result.length; i++) {
+                            $("#dt").append(`<div name="dt" id="dt${i}"><br>`);
+                            $("#st").append(`<div name="st" id="st${i}">`);
+                            $("#dur").append(`<div name="dur" id="dur${i}">`);
+                            $("#bo").append(`<div name="bo" id="bo${i}">`);
+                        }
+
+
+                        for (let i = 0; i < result.length; i++) {
+                            str = result[i].date;
+                            date = str.substring(0, 10);
+                            dtKey = "\#dt" + i;
+                            stKey = "\#st" + i;
+                            durKey= "\#dur" + i;
+                            boKey = "\#bo" + i;
+
+                            $(dtKey).html(date);
+                            $(stKey).html(convertTime(result[i].startTime));
+                            $(durKey).html(convertTime(result[i].endTime));
+                        }
+                    }
+                }
+            });//ajax
+        }//getUsersEvents
+    });//ready
+
+    var popupWindow = null;
+
+    function centeredPopup(url, winName, w, h, scroll) {
+        LeftPosition = (screen.width) ? (screen.width - w) / 2 : 0;
+        TopPosition = (screen.height) ? (screen.height - h) / 2 : 0;
+        settings =
+            'height=' + h + ',width=' + w + ',top=' + TopPosition + ',left=' + LeftPosition + ',scrollbars=' + scroll + ',resizable'
+        popupWindow = window.open(url, winName, settings)
+    }
+
+    function convertTime(time) {
+
+        time = time.split(':'); // convert to array
+
+        // fetch
+        var hours = Number(time[0]);
+        var minutes = Number(time[1]);
+        var seconds = Number(time[2]);
+
+        // calculate
+        var timeValue;
+
+        if (hours > 0 && hours <= 12) {
+            timeValue = "" + hours;
+        } else if (hours > 12) {
+            timeValue = "" + (hours - 12);
+        } else if (hours == 0) {
+            timeValue = "12";
+        }
+
+        timeValue += (minutes < 10) ? ":0" + minutes : ":" + minutes;  // get minutes
+        timeValue += (seconds < 10) ? ":0" + seconds : ":" + seconds;  // get seconds
+        timeValue += (hours >= 12) ? " P.M." : " A.M.";  // get AM/PM
+
+        return timeValue;
+    }
+</script>
+<% include partials/footer %>
